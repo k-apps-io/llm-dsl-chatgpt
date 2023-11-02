@@ -1,32 +1,43 @@
 {
-  "name": "@k-apps-io/template-typescript-package",
-  "version": "1.0.2",
-  "description": "",
-  "main": "index.js",
+  "name": "@k-apps.io/llm-dsl-chatgpt",
+  "version": "1.0.1",
+  "description": "a ChatGPT implementation of @k-apps.io/llm-dsl",
+  "main": "src/index.ts",
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "deploy": "npm run build && npm publish"
+    "deploy": "npm run build && npm publish --access public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/k-apps-io/template-typescript-package.git"
+    "url": "git+https://github.com/k-apps-io/llm-dsl-chatgpt.git"
   },
-  "keywords": [],
+  "keywords": [
+    "openai",
+    "chatgpt",
+    "LLM",
+    "DSL"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/k-apps-io/template-typescript-package/issues"
+    "url": "https://github.com/k-apps-io/llm-dsl-chatgpt/issues"
   },
-  "homepage": "https://github.com/k-apps-io/template-typescript-package#readme",
+  "homepage": "https://github.com/k-apps-io/llm-dsl-chatgpt#readme",
   "devDependencies": {
     "@types/jest": "^29.5.1",
     "jest": "^29.5.0",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "dotenv": "^16.3.1"
   },
   "dependencies": {
-    "dotenv": "^16.3.1"
-  }
+    "@k-apps.io/llm-dsl": "^1.0.0",
+    "openai": "^4.14.2",
+    "tiktoken": "^1.0.10"
+  },
+  "files": [
+    "src/index*"
+  ]
 }
