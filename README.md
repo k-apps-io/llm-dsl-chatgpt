@@ -10,7 +10,7 @@ npm install @k-apps.io/llm-dsl-chatgpt
 
 ```typescript
 import { DSL, LocalStorage, Context } from "@k-apps.io/llm-dsl";
-import ChatGPT, { Options } from "@k-apps.io/llm-dsl-chatgpt";
+import { ChatGPT, Options } from "@k-apps.io/llm-dsl-chatgpt";
 
 require( "dotenv" ).config();
 
@@ -31,8 +31,8 @@ const main = () => {
   chat.prompt( {
       message: "hello"
     } )
-    .stream( ( { content, chatId, messageId } ) => {
-      process.stdout.write( content );
+    .stream( chunk => {
+      if ( chunk.type === "message" ) process.stdout.write( content );
     } )
     .then( () => {
       console.log( "done" );
