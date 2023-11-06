@@ -3,7 +3,7 @@ a ChatGPT implementation for [@k-apps.io/llm-dsl](https://www.npmjs.com/package/
 
 # Installation
 ```shell
-npm install @k-apps.io/llm-dsl-chatgpt
+npm install @k-apps.io/llm-dsl-chatgpt @k-apps.io/llm-dsl
 ```
 
 # Usage
@@ -22,13 +22,12 @@ const main = () => {
     llm: LLM,
     storage: LocalStorage,
     options: {
-      model: "gpt-4",
-      temperature: 0.5,
-      top_p: 0.5
+      model: "gpt-4"
     }
   } );
 
-  chat.prompt( {
+  chat
+    .prompt( {
       message: "hello"
     } )
     .stream( chunk => {
