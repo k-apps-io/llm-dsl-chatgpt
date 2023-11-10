@@ -3,7 +3,7 @@ import { ClientOptions, OpenAI } from 'openai';
 import { ChatCompletionCreateParamsNonStreaming, ChatCompletionCreateParamsStreaming } from 'openai/resources';
 import { encoding_for_model } from 'tiktoken';
 
-interface StreamOptions extends Stream, Omit<ChatCompletionCreateParamsStreaming, "messages" | "stream" | "functions"> { }
+interface StreamOptions extends Stream, Omit<ChatCompletionCreateParamsStreaming, "messages" | "stream" | "functions" | "max_tokens"> { }
 
 export interface Options extends LLMOptions, Omit<ChatCompletionCreateParamsNonStreaming, "messages"> { }
 
@@ -38,6 +38,7 @@ export class ChatGPT extends LLM {
           role: m.role,
         };
       } ),
+      max_tokens: config.response_tokens
     };
 
     // add the functions if they're defined

@@ -3,7 +3,7 @@ a ChatGPT implementation for [@k-apps.io/llm-dsl](https://www.npmjs.com/package/
 
 # Installation
 ```shell
-npm install @k-apps.io/llm-dsl-chatgpt @k-apps.io/llm-dsl
+npm install @k-apps.io/llm-dsl-chatgpt
 ```
 
 # Usage
