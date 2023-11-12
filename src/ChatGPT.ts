@@ -55,8 +55,10 @@ export class ChatGPT extends LLM {
     //  and then finally yielded once both the name and args are complete
     let functionName: string | null = null;
     let functionArgs: string = "";
+    let open: boolean = false;
     for await ( const chunk of stream ) {
       if ( chunk.choices[ 0 ].delta.function_call ) {
+        open = true;
         // we have a function call
         const call = chunk.choices[ 0 ].delta.function_call;
         // set the name if it's defined
@@ -64,11 +66,19 @@ export class ChatGPT extends LLM {
         // build up the args
         functionArgs += call.arguments || "";
       } else {
+        if ( open ) {
+          yield { type: "function", name: functionName!, arguments: functionArgs };
+          // reset
+          open = false;
+          functionName = null;
+          functionArgs = "";
+        }
         const content = chunk.choices[ 0 ].delta?.content || '';
         yield { content: content, type: "text" };
       }
     }
-    if ( functionName !== null ) {
+    // flush
+    if ( open ) {
       yield { type: "function", name: functionName!, arguments: functionArgs };
     }
   }
