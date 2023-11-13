@@ -1,6 +1,6 @@
 {
   "name": "@k-apps.io/llm-dsl-chatgpt",
-  "version": "1.2.1-beta.1",
+  "version": "1.2.1-beta.2",
   "description": "a ChatGPT implementation of @k-apps.io/llm-dsl",
   "main": "dist/index.js",
   "scripts": {
