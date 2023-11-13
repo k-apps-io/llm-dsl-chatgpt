@@ -1,7 +1,7 @@
 import { FunctionResponse, LLM, Options as LLMOptions, Stream, TextResponse } from "@k-apps.io/llm-dsl";
 import { ClientOptions, OpenAI } from 'openai';
 import { ChatCompletionCreateParamsNonStreaming, ChatCompletionCreateParamsStreaming } from 'openai/resources';
-import { encoding_for_model } from 'tiktoken';
+import { TiktokenModel, encoding_for_model } from 'tiktoken';
 
 interface StreamOptions extends Stream, Omit<ChatCompletionCreateParamsStreaming, "messages" | "stream" | "functions" | "max_tokens"> { }
 
@@ -10,15 +10,17 @@ export interface Options extends LLMOptions, Omit<ChatCompletionCreateParamsNonS
 export class ChatGPT extends LLM {
   openapi: OpenAI;
   options: ClientOptions;
+  encoder: TiktokenModel;
 
-  constructor( options: ClientOptions ) {
+  constructor( options: ClientOptions, encoder: TiktokenModel ) {
     super();
     this.options = options;
     this.openapi = new OpenAI( options );
+    this.encoder = encoder;
   }
 
   tokens( text: string ): number {
-    const enc = encoding_for_model( "gpt-4" );
+    const enc = encoding_for_model( this.encoder );
     const tokens = enc.encode( text );
     enc.free();
     return tokens.length;
@@ -38,7 +40,7 @@ export class ChatGPT extends LLM {
           role: m.role,
         };
       } ),
-      max_tokens: config.response_tokens
+      max_tokens: config.responseSize
     };
 
     // add the functions if they're defined
