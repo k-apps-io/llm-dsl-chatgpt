@@ -1,25 +1,43 @@
-import { FunctionResponse, LLM, Options as LLMOptions, Stream, TextResponse } from "@k-apps.io/llm-dsl";
+import { FunctionResponse, LLM, Options as LLMOptions, Stream, TextResponse } from "@k-apps-io/llm-dsl";
 import { ClientOptions, OpenAI } from 'openai';
 import { ChatCompletionCreateParamsNonStreaming, ChatCompletionCreateParamsStreaming } from 'openai/resources';
 import { TiktokenModel, encoding_for_model } from 'tiktoken';
 
 interface StreamOptions extends Stream, Omit<ChatCompletionCreateParamsStreaming, "messages" | "stream" | "functions" | "max_tokens"> { }
 
-export interface Options extends LLMOptions, Omit<ChatCompletionCreateParamsNonStreaming, "messages"> { }
+export interface Options extends LLMOptions, Omit<ChatCompletionCreateParamsNonStreaming, "messages" | "model"> { }
+
+interface ChatGPTOptions extends ClientOptions {
+  model: TiktokenModel | string;
+}
+
+const determineEncoder = ( model: string ): TiktokenModel => {
+  const match = model.match( /ft:(.+):.+::.+/i );
+  if ( match ) {
+    return match[ 1 ] as TiktokenModel;
+  }
+  throw new Error( `could not determine encoder from model ${ model }` );
+};
 
 export class ChatGPT extends LLM {
   openapi: OpenAI;
   options: ClientOptions;
   encoder: TiktokenModel;
 
-  constructor( options: ClientOptions, encoder: TiktokenModel ) {
+  constructor( options: ChatGPTOptions ) {
     super();
+    if ( typeof options.model !== 'string' ) {
+      this.encoder = options.model;
+    } else {
+      // determine the encoder
+      this.encoder = determineEncoder( options.model );
+    }
     this.options = options;
     this.openapi = new OpenAI( options );
-    this.encoder = encoder;
   }
 
   tokens( text: string ): number {
+    if ( !text ) return 0;
     const enc = encoding_for_model( this.encoder );
     const tokens = enc.encode( text );
     enc.free();
@@ -31,7 +49,7 @@ export class ChatGPT extends LLM {
 
     // build the completion body
     const body: ChatCompletionCreateParamsStreaming = {
-      model: config.model,
+      model: config.model || this.encoder,
       stream: true,
       user: config.user,
       messages: messages.map( m => {
