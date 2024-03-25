@@ -16,7 +16,7 @@ const determineEncoder = ( model: string ): TiktokenModel => {
   if ( match ) {
     return match[ 1 ] as TiktokenModel;
   }
-  throw new Error( `could not determine encoder from model ${ model }` );
+  return "gpt-3.5-turbo" as TiktokenModel;
 };
 
 export class ChatGPT extends LLM {
