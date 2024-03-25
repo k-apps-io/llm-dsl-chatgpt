@@ -34,7 +34,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@k-apps-io/llm-dsl": "^2.0.1-beta.0",
+    "@k-apps-io/llm-dsl": "^2.0.2-beta.20",
     "openai": "^4.29.2",
     "tiktoken": "^1.0.10"
   },
