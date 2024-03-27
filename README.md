@@ -3,7 +3,7 @@ a ChatGPT implementation for [@k-apps.io/llm-dsl](https://www.npmjs.com/package/
 
 # Installation
 ```shell
-npm install @k-apps.io/llm-dsl-chatgpt
+npm install @k-apps.io/llm-dsl @k-apps.io/llm-dsl-chatgpt
 ```
 
 # Usage
@@ -16,23 +16,17 @@ require( "dotenv" ).config();
 
 const main = () => {
 
-  const LLM = new ChatGPT( {} );
+  const LLM = new ChatGPT( { model: "gpt-3.5-turbo" } );
 
   const chat = new DSL<Options, Context>( {
-    llm: LLM,
-    storage: LocalStorage,
-    options: {
-      model: "gpt-4"
-    }
+    llm: LLM
   } );
 
   chat
     .prompt( {
       message: "hello"
     } )
-    .stream( chunk => {
-      if ( chunk.type === "message" ) process.stdout.write( content );
-    } )
+    .stream( stdout() )
     .then( () => {
       console.log( "done" );
     } )
