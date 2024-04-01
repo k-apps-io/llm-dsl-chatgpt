@@ -1,7 +1,7 @@
-import { FunctionResponse, LLM, Options as LLMOptions, Stream, TextResponse } from "@k-apps-io/llm-dsl";
+import { Function, FunctionResponse, LLM, Options as LLMOptions, Message, Stream, TextResponse } from "@k-apps-io/llm-dsl";
 import { ClientOptions, OpenAI } from 'openai';
 import { ChatCompletionCreateParamsNonStreaming, ChatCompletionCreateParamsStreaming } from 'openai/resources';
-import { TiktokenModel, encoding_for_model } from 'tiktoken';
+import { Tiktoken, TiktokenModel, encoding_for_model } from 'tiktoken';
 
 interface StreamOptions extends Stream, Omit<ChatCompletionCreateParamsStreaming, "messages" | "stream" | "functions" | "max_tokens"> { }
 
@@ -11,25 +11,26 @@ interface ChatGPTOptions extends ClientOptions {
   model: TiktokenModel | string;
 }
 
-const determineEncoder = ( model: string ): TiktokenModel => {
+const determineEncoder = ( model: string ): Tiktoken => {
   const match = model.match( /ft:(.+):.+::.+/i );
   if ( match ) {
-    return match[ 1 ] as TiktokenModel;
+    model = match[ 1 ] as TiktokenModel;
   }
-  return model as TiktokenModel;
+  return encoding_for_model( model as TiktokenModel );
 };
 
 export class ChatGPT extends LLM {
   openapi: OpenAI;
   options: ClientOptions;
-  encoder: TiktokenModel;
+  encoder: Tiktoken;
+  model: string;
 
   constructor( options: ChatGPTOptions ) {
     super();
+    this.model = options.model;
     if ( typeof options.model !== 'string' ) {
       this.encoder = options.model;
     } else {
-      // determine the encoder
       this.encoder = determineEncoder( options.model );
     }
     this.options = options;
@@ -38,10 +39,91 @@ export class ChatGPT extends LLM {
 
   tokens( text: string ): number {
     if ( !text ) return 0;
-    const enc = encoding_for_model( this.encoder );
-    const tokens = enc.encode( text );
-    enc.free();
+    const tokens = this.encoder.encode( text );
     return tokens.length;
+  }
+
+  /**
+   * this calculation is based off https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb and 
+   * should be treated as an estimate and not a exact calculation
+   * 
+   * @param {Message[]} window 
+   * @returns number
+   */
+  windowTokens( window: Message[] ): number {
+    let tokensPerMessage: number;
+    let tokensPerName: number;
+    const model = this.model;
+    if ( model === "gpt-3.5-turbo-0613" ||
+      model === "gpt-3.5-turbo-16k-0613" ||
+      model === "gpt-4-0314" ||
+      model === "gpt-4-32k-0314" ||
+      model === "gpt-4-0613" ||
+      model === "gpt-4-32k-0613" ||
+      model.includes( "gpt-3.5-turbo" ) ||
+      model.includes( "gpt-4" ) ) {
+      tokensPerMessage = 3;
+      tokensPerName = 1;
+    } else if ( model === "gpt-3.5-turbo-0301" ) {
+      tokensPerMessage = 4; // every message follows {role/name}\n{content}\n
+      tokensPerName = -1; // if there's a name, the role is omitted
+    } else {
+      throw new Error( `not implemented for model ${ model }.` );
+    }
+
+    let numTokens = 0;
+
+    for ( const message of window ) {
+      numTokens += tokensPerMessage + message.size;
+      if ( Object.keys( message ).includes( "name" ) ) {
+        numTokens += tokensPerName;
+      }
+      numTokens += message.size;
+    }
+
+    numTokens += 3; // every reply is primed with assistant
+    return numTokens;
+  }
+
+  /**
+   * calculation is based off https://stackoverflow.com/questions/77168202/calculating-total-tokens-for-api-request-to-chatgpt-including-functions
+   * and should be treated as an estimate and not an exact calculation
+   * 
+   * @param {Function[]} functions 
+   * @returns {{ total: number;[ key: string ]: number; }}
+   */
+  functionTokens( functions: Function[] ): { total: number;[ key: string ]: number; } {
+    if ( functions.length === 0 ) return { total: 0 };
+    return functions
+      .map( ( { name, description, parameters } ) => {
+        let tokenCount = 7; // 7 for each function to start
+        tokenCount += this.encoder.encode( `${ name }:${ description }` ).length;
+        if ( parameters ) {
+          tokenCount += 3;
+          Object.keys( parameters.properties ).forEach( key => {
+            tokenCount += 3;
+            const p_type = parameters.properties[ key ].type;
+            const p_desc = parameters.properties[ key ].description;
+            if ( p_type === "enum" ) {
+              tokenCount += 3;  // Add tokens if property has enum list
+              const options: string[] = parameters.properties[ key ].enum;
+              options.forEach( ( v: any ) => {
+                tokenCount += this.encoder.encode( String( v ) ).length + 3;
+              } );
+            }
+            tokenCount += this.encoder.encode( `${ key }:${ p_type }:${ p_desc }"` ).length;
+          } );
+        }
+        return [ name, tokenCount ] as [ string, number ];
+      } ).reduce( ( total, [ name, count ] ) => {
+        total[ name ] = count;
+        total.total += count;
+        return total;
+      }, { total: 12 } as { total: number;[ key: string ]: number; } );
+  }
+
+  close(): void {
+    this.encoder.free();
   }
 
   async *stream( config: StreamOptions ): AsyncIterable<FunctionResponse | TextResponse> {
@@ -49,7 +131,7 @@ export class ChatGPT extends LLM {
 
     // build the completion body
     const body: ChatCompletionCreateParamsStreaming = {
-      model: config.model || this.encoder,
+      model: config.model,
       stream: true,
       user: config.user,
       messages: messages.map( m => {
