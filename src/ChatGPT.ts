@@ -78,7 +78,6 @@ export class ChatGPT extends LLM {
       if ( Object.keys( message ).includes( "name" ) ) {
         numTokens += tokensPerName;
       }
-      numTokens += message.size;
     }
 
     numTokens += 3; // every reply is primed with assistant
