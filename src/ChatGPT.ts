@@ -5,7 +5,7 @@ import { TiktokenModel, encoding_for_model } from 'tiktoken';
 
 interface StreamOptions extends Stream, Omit<ChatCompletionCreateParamsStreaming, "messages" | "stream" | "functions" | "max_tokens"> { }
 
-export interface Options extends LLMOptions, Omit<ChatCompletionCreateParamsNonStreaming, "messages" | "model"> { }
+export interface Options extends LLMOptions, Omit<ChatCompletionCreateParamsNonStreaming, "messages" | "model" | "functions"> { }
 
 interface ChatGPTOptions extends ClientOptions {
   model: TiktokenModel | string;
