@@ -131,7 +131,7 @@ export class ChatGPT extends LLM {
 
     // build the completion body
     const body: ChatCompletionCreateParamsStreaming = {
-      model: config.model,
+      model: config.model || this.model,
       stream: true,
       user: config.user,
       messages: messages.map( m => {
