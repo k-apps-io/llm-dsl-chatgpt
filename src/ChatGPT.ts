@@ -54,7 +54,10 @@ export class ChatGPT extends LLM {
     let tokensPerMessage: number;
     let tokensPerName: number;
     const model = this.model;
-    if ( model === "gpt-3.5-turbo-0613" ||
+    if ( model === "gpt-3.5-turbo-0301" ) {
+      tokensPerMessage = 4; // every message follows {role/name}\n{content}\n
+      tokensPerName = -1; // if there's a name, the role is omitted
+    } else if ( model === "gpt-3.5-turbo-0613" ||
       model === "gpt-3.5-turbo-16k-0613" ||
       model === "gpt-4-0314" ||
       model === "gpt-4-32k-0314" ||
@@ -64,9 +67,6 @@ export class ChatGPT extends LLM {
       model.includes( "gpt-4" ) ) {
       tokensPerMessage = 3;
       tokensPerName = 1;
-    } else if ( model === "gpt-3.5-turbo-0301" ) {
-      tokensPerMessage = 4; // every message follows {role/name}\n{content}\n
-      tokensPerName = -1; // if there's a name, the role is omitted
     } else {
       throw new Error( `not implemented for model ${ model }.` );
     }
@@ -122,7 +122,7 @@ export class ChatGPT extends LLM {
   }
 
   close(): void {
-    this.encoder.free();
+    // this.encoder.free();
   }
 
   async *stream( config: StreamOptions ): AsyncIterable<FunctionResponse | TextResponse> {
