@@ -1,6 +1,6 @@
 {
   "name": "@k-apps-io/llm-dsl-chatgpt",
-  "version": "2.0.1",
+  "version": "2.0.2-beta.4",
   "description": "a ChatGPT implementation of @k-apps.io/llm-dsl",
   "main": "dist/index.js",
   "scripts": {
@@ -35,7 +35,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@k-apps-io/llm-dsl": "^2.0.1",
+    "@k-apps-io/llm-dsl": "^2.0.3-beta.2",
     "openai": "^4.29.2",
     "tiktoken": "^1.0.10"
   },
