@@ -1,16 +1,16 @@
 # llm-dsl-chatgpt
-a ChatGPT implementation for [@k-apps.io/llm-dsl](https://www.npmjs.com/package/@k-apps.io/llm-dsl)
+a ChatGPT implementation for [@k-apps-io/llm-dsl](https://www.npmjs.com/package/@k-apps-io/llm-dsl)
 
 # Installation
 ```shell
-npm install @k-apps.io/llm-dsl @k-apps.io/llm-dsl-chatgpt
+npm install @k-apps-io/llm-dsl @k-apps-io/llm-dsl-chatgpt
 ```
 
 # Usage
 
 ```typescript
-import { DSL, LocalStorage, Context } from "@k-apps.io/llm-dsl";
-import { ChatGPT, Options } from "@k-apps.io/llm-dsl-chatgpt";
+import { DSL, LocalStorage, Context } from "@k-apps-io/llm-dsl";
+import { ChatGPT, Options } from "@k-apps-io/llm-dsl-chatgpt";
 
 require( "dotenv" ).config();
 
@@ -38,3 +38,7 @@ const main = () => {
 main();
 
 ```
+
+# More
+
+See the docs for [@k-apps-io/llm-dsl](https://www.npmjs.com/package/@k-apps-io/llm-dsl)
