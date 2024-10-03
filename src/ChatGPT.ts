@@ -16,7 +16,12 @@ const determineEncoder = ( model: string ): Tiktoken => {
   if ( match ) {
     model = match[ 1 ] as TiktokenModel;
   }
-  return encoding_for_model( model as TiktokenModel );
+  try {
+    return encoding_for_model( model as TiktokenModel );
+  } catch ( error ) {
+    process.emitWarning( `Encoder could not be determined for model: ${ model }` );
+    return encoding_for_model( "gpt-4o-mini" );
+  }
 };
 
 export class ChatGPT extends LLM {
@@ -68,7 +73,9 @@ export class ChatGPT extends LLM {
       tokensPerMessage = 3;
       tokensPerName = 1;
     } else {
-      throw new Error( `not implemented for model ${ model }.` );
+      process.emitWarning( `model ${ model } is unknown. The window tokens will be calculated using gpt-4` );
+      tokensPerMessage = 3;
+      tokensPerName = 1;
     }
 
     let numTokens = 0;
@@ -139,7 +146,7 @@ export class ChatGPT extends LLM {
           role: m.role,
         };
       } ),
-      max_tokens: config.responseSize
+      max_completion_tokens: config.responseSize
     };
 
     // add the functions if they're defined
