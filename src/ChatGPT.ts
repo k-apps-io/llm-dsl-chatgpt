@@ -137,7 +137,6 @@ export class ChatGPT extends LLM {
 
     // build the completion body
     const body: ChatCompletionCreateParamsStreaming = {
-      ...config,
       model: config.model || this.model,
       stream: true,
       user: config.user,
@@ -147,7 +146,24 @@ export class ChatGPT extends LLM {
           role: m.role,
         };
       } ),
-      max_completion_tokens: config.responseSize
+      frequency_penalty: config.frequency_penalty,
+      function_call: config.function_call,
+      logit_bias: config.logit_bias,
+      logprobs: config.logprobs,
+      max_completion_tokens: config.responseSize,
+      n: config.n,
+      parallel_tool_calls: config.parallel_tool_calls,
+      presence_penalty: config.presence_penalty,
+      response_format: config.response_format,
+      seed: config.seed,
+      stop: config.stop,
+      service_tier: config.service_tier,
+      stream_options: config.stream_options,
+      temperature: config.temperature,
+      tool_choice: config.tool_choice,
+      tools: config.tools,
+      top_logprobs: config.top_logprobs,
+      top_p: config.top_p
     };
 
     // add the functions if they're defined
