@@ -1,7 +1,7 @@
 import { Function, FunctionResponse, LLM, Options as LLMOptions, Message, Stream, TextResponse } from "@k-apps-io/llm-dsl";
 import { ClientOptions, OpenAI } from 'openai';
 import { ChatCompletionCreateParamsNonStreaming, ChatCompletionCreateParamsStreaming } from 'openai/resources';
-import { Tiktoken, TiktokenModel, encoding_for_model } from 'tiktoken';
+import { encoding_for_model, Tiktoken, TiktokenModel } from 'tiktoken';
 
 interface StreamOptions extends Stream, Omit<ChatCompletionCreateParamsStreaming, "messages" | "stream" | "functions" | "max_tokens"> { }
 
@@ -137,6 +137,7 @@ export class ChatGPT extends LLM {
 
     // build the completion body
     const body: ChatCompletionCreateParamsStreaming = {
+      ...config,
       model: config.model || this.model,
       stream: true,
       user: config.user,
