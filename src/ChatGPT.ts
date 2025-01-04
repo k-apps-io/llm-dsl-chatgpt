@@ -1,7 +1,7 @@
 import { Function, FunctionResponse, LLM, Options as LLMOptions, Message, Stream, TextResponse } from "@k-apps-io/llm-dsl";
 import { ClientOptions, OpenAI } from 'openai';
 import { ChatCompletionCreateParamsNonStreaming, ChatCompletionCreateParamsStreaming } from 'openai/resources';
-import { Tiktoken, TiktokenModel, encoding_for_model } from 'tiktoken';
+import { encoding_for_model, Tiktoken, TiktokenModel } from 'tiktoken';
 
 interface StreamOptions extends Stream, Omit<ChatCompletionCreateParamsStreaming, "messages" | "stream" | "functions" | "max_tokens"> { }
 
@@ -16,7 +16,12 @@ const determineEncoder = ( model: string ): Tiktoken => {
   if ( match ) {
     model = match[ 1 ] as TiktokenModel;
   }
-  return encoding_for_model( model as TiktokenModel );
+  try {
+    return encoding_for_model( model as TiktokenModel );
+  } catch ( error ) {
+    process.emitWarning( `Encoder could not be determined for model: ${ model }` );
+    return encoding_for_model( "gpt-4o-mini" );
+  }
 };
 
 export class ChatGPT extends LLM {
@@ -68,7 +73,9 @@ export class ChatGPT extends LLM {
       tokensPerMessage = 3;
       tokensPerName = 1;
     } else {
-      throw new Error( `not implemented for model ${ model }.` );
+      process.emitWarning( `model ${ model } is unknown. The window tokens will be calculated using gpt-4` );
+      tokensPerMessage = 3;
+      tokensPerName = 1;
     }
 
     let numTokens = 0;
@@ -139,7 +146,24 @@ export class ChatGPT extends LLM {
           role: m.role,
         };
       } ),
-      max_tokens: config.responseSize
+      frequency_penalty: config.frequency_penalty,
+      function_call: config.function_call,
+      logit_bias: config.logit_bias,
+      logprobs: config.logprobs,
+      max_completion_tokens: config.responseSize,
+      n: config.n,
+      parallel_tool_calls: config.parallel_tool_calls,
+      presence_penalty: config.presence_penalty,
+      response_format: config.response_format,
+      seed: config.seed,
+      stop: config.stop,
+      service_tier: config.service_tier,
+      stream_options: config.stream_options,
+      temperature: config.temperature,
+      tool_choice: config.tool_choice,
+      tools: config.tools,
+      top_logprobs: config.top_logprobs,
+      top_p: config.top_p
     };
 
     // add the functions if they're defined
