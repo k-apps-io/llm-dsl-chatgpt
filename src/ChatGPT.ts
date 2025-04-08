@@ -1,5 +1,5 @@
 import { Function, FunctionResponse, LLM, Options as LLMOptions, Message, Stream, TextResponse } from "@k-apps-io/llm-dsl";
-import { ClientOptions, OpenAI } from 'openai';
+import { AzureOpenAI, ClientOptions, OpenAI } from 'openai';
 import { ChatCompletionCreateParamsNonStreaming, ChatCompletionCreateParamsStreaming } from 'openai/resources';
 import { encoding_for_model, Tiktoken, TiktokenModel } from 'tiktoken';
 
@@ -9,6 +9,7 @@ export interface Options extends LLMOptions, Omit<ChatCompletionCreateParamsNonS
 
 interface ChatGPTOptions extends ClientOptions {
   model: TiktokenModel | string;
+  client?: OpenAI | AzureOpenAI;
 }
 
 const determineEncoder = ( model: string ): Tiktoken => {
@@ -25,7 +26,7 @@ const determineEncoder = ( model: string ): Tiktoken => {
 };
 
 export class ChatGPT extends LLM {
-  openapi: OpenAI;
+  openapi: OpenAI | AzureOpenAI;
   options: ClientOptions;
   encoder: Tiktoken;
   model: string;
@@ -39,7 +40,12 @@ export class ChatGPT extends LLM {
       this.encoder = determineEncoder( options.model );
     }
     this.options = options;
-    this.openapi = new OpenAI( options );
+    if ( options.client ) {
+      this.openapi = options.client;
+      delete options.client;
+    } else {
+      this.openapi = new OpenAI( options );
+    }
   }
 
   tokens( text: string ): number {
@@ -182,6 +188,7 @@ export class ChatGPT extends LLM {
     let functionArgs: string = "";
     let open: boolean = false;
     for await ( const chunk of stream ) {
+      if ( !chunk.choices.length ) continue;
       if ( chunk.choices[ 0 ].delta.function_call ) {
         open = true;
         // we have a function call
