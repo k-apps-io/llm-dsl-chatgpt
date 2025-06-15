@@ -1,17 +1,19 @@
-import { DSL, localFileStream } from "@k-apps-io/llm-dsl";
-import { ChatGPT, Options } from "../src/ChatGPT";
+import { localFileStream } from "@k-apps-io/llm-dsl";
+import { ChatGPT } from "../src/ChatGPT";
 
-const chat = new DSL<Options, any, undefined>( {
-  llm: new ChatGPT( { model: "gpt-3.5-turbo" } )
-} );
-describe( "'Hello, World!'", () => {
-  it( 'hello world', async () => {
-    const $chat = chat
+const chat = new ChatGPT({ model: "gpt-4o-mini" });
+
+describe("'Hello, World!'", () => {
+  it("hello world", async () => {
+    await chat
       .clone()
-      .prompt( {
-        message: "hello world"
-      } )
-      .stream( localFileStream( { directory: __dirname, filename: "hello.world" } ) );
-    await expect( $chat ).resolves.toBeDefined();
-  }, 20000 );
-} );
+      .prompt({
+        prompt: {
+          role: "user",
+          content: "Hello, World!",
+        },
+      })
+      .pipe(localFileStream({ directory: __dirname, filename: "hello.world" }))
+      .execute();
+  }, 20000);
+});
