@@ -36,8 +36,12 @@ export const transcribe: LLM.Tool.Tool<
         .then((res) => res.blob())
         .then((blob) => {
           const openai = new OpenAI();
+          const file = new File([blob], "audio.mp3", {
+            type: blob.type,
+            lastModified: Date.now(),
+          });
           return openai.audio.transcriptions.create({
-            file: blob,
+            file,
             model: "whisper-1",
             language,
             prompt,
@@ -100,8 +104,12 @@ export const translate: LLM.Tool.Tool<
         .then((res) => res.blob())
         .then((blob) => {
           const openai = new OpenAI();
+          const file = new File([blob], "audio.mp3", {
+            type: blob.type,
+            lastModified: Date.now(),
+          });
           return openai.audio.translations.create({
-            file: blob,
+            file,
             model: "whisper-1",
             prompt,
           });
